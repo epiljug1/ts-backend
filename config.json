@@ -1,4 +1,4 @@
 {
-  "connectionString": "mongodb+srv://evelin:hesoyam@cluster0.x614q.mongodb.net/ts-projekat?retryWrites=true&w=majority",
+  "connectionString": "MongoConnectionString",
   "secret": "anavolimilovana"
 }
