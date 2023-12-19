@@ -5,8 +5,7 @@ const Role = require("../helpers/role");
 const { jwt, jwtOptional } = require("../helpers/jwt");
 
 //routes
-// router.post("/authenticate", authenticate);
-router.post("/create", createPost);
+router.post("/create", jwt(), createPost);
 router.post("/:id/like", jwt(), likePost);
 router.post("/:id/verify", jwt(Role.Admin), verifyPost);
 
@@ -14,9 +13,7 @@ router.put("/:id", jwt(), update);
 
 router.get("/", jwtOptional(), getAll);
 router.get("/pending", jwt(Role.Admin), pendingPost);
-// router.get("/current", jwt(), getCurrent);
 router.get("/:id", jwt(), getById);
-router.get("/user", jwt(), getUserPosts);
 router.get("/:id/comments", jwt(), getPostComments);
 
 router.delete("/:id", jwt(), _delete);
@@ -36,7 +33,7 @@ function verifyPost(req, res, next) {
 
 function likePost(req, res, next) {
   postServices
-    .update(req.params.id, {}, true)
+    .update(req.params.id, { currentUser: req.user }, true)
     .then(() =>
       res.json({
         message: `Post liked successfully.`,
@@ -52,15 +49,7 @@ function getPostComments(req, res, next) {
     .catch((err) => next(err));
 }
 
-function getUserPosts(req, res, next) {
-  postServices
-    .getUserPosts(req.user.sub)
-    .then((posts) => res.json(posts))
-    .catch((err) => next(err));
-}
-
 function getAll(req, res, next) {
-  console.log("req.user: ", req.user);
   postServices
     .getAll(req.user?.sub)
     .then((posts) => res.json(posts))
@@ -75,8 +64,9 @@ function pendingPost(req, res, next) {
 }
 
 function createPost(req, res, next) {
+  console.log("crete post USER: ", req.user);
   postServices
-    .create(req.body)
+    .create({ ...req.body, user: req.user.sub })
     .then((post) =>
       res.json({
         post: post,

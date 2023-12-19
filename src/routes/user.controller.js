@@ -2,28 +2,37 @@ const express = require("express");
 const router = express.Router();
 const userServices = require("../services/user.services");
 const Role = require("../helpers/role");
-const { jwt } = require("../helpers/jwt");
+const { jwt, jwtOptional } = require("../helpers/jwt");
+const { jwtDecode } = require("jwt-decode");
 
 //routes
 router.post("/authenticate", authenticate);
+router.post("/logout", logout);
 router.post("/register", register);
+
+router.get("/posts", jwt(), getUserPosts);
 
 router.put("/:id", jwt(), update);
 
 router.get("/", jwt(Role.Admin), getAll);
-router.get("/current", jwt(), getCurrent);
+router.get("/current", jwtOptional(), getCurrent);
 router.get("/:id", jwt(), getById);
 
 router.delete("/:id", jwt(Role.Admin), _delete);
 
 module.exports = router;
 
-//route functions
 function authenticate(req, res, next) {
   userServices
     .authenticate(req.body)
     .then((user) => {
-      console.log(user);
+      if (user) {
+        res.cookie("authToken", user.token, {
+          httpOnly: true,
+          path: "/",
+          maxAge: 3600000,
+        });
+      }
       user
         ? res.json({ user: user, message: "User logged in successfully" })
         : res
@@ -31,6 +40,15 @@ function authenticate(req, res, next) {
             .json({ message: "Username or password is incorrect." });
     })
     .catch((error) => next(error));
+}
+
+function logout(req, res, next) {
+  res.clearCookie("authToken", {
+    httpOnly: true,
+    path: "/",
+  });
+
+  res.json({ message: "User logged out successfully" });
 }
 
 function register(req, res, next) {
@@ -48,17 +66,26 @@ function register(req, res, next) {
 function getAll(req, res, next) {
   const currentUser = req.user;
 
-  if (currentUser.role !== Role.Admin) {
-    return res.status(401).json({ message: "Not Authorized!" });
-  }
+  // if (currentUser.role !== Role.Admin) {
+  //   return res.status(401).json({ message: "Not Authorized!" });
+  // }
   userServices
     .getAll()
     .then((users) => res.json(users))
     .catch((err) => next(err));
 }
 
+function getUserPosts(req, res, next) {
+  userServices
+    .getUserPosts(req.user.sub)
+    .then((posts) => res.json(posts))
+    .catch((err) => next(err));
+}
+
 function getCurrent(req, res, next) {
-  console.log("get current: ", req.user);
+  if (!req.user) {
+    return res.json({ user: null });
+  }
   userServices
     .getById(req.user.sub)
     .then((user) => (user ? res.json(user) : res.status(404)))

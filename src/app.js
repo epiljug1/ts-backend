@@ -10,8 +10,14 @@ const indexRouter = require("./routes/index");
 const usersRouter = require("./routes/user.controller");
 const postsRouter = require("./routes/post.controller");
 const commentRouter = require("./routes/comment.controller");
+const { attachUser } = require("./helpers/jwt");
 
 const app = express();
+const corsOptions = {
+  origin: "http://localhost:3000", // Replace with your React app's URL
+  credentials: true, // To allow cookies
+};
+app.use(cors(corsOptions));
 
 // view engine setup
 app.set("views", path.join(__dirname, "views"));
@@ -22,12 +28,14 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "public")));
-app.use(cors());
+
+// app.use(attachUser);
 
 app.use("/", indexRouter);
 app.use("/users", usersRouter);
 app.use("/posts", postsRouter);
 app.use("/comment", commentRouter);
+
 
 // catch 404 and forward to error handler
 app.use(errorHandler);

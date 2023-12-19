@@ -14,7 +14,7 @@ async function create(commentParam) {
   const user = await User.findById(commentParam.user);
   if (!user) throw `User does not exist!`;
 
-  const post = await User.findById(commentParam.post);
+  const post = await Post.findById(commentParam.post);
   if (!post) throw `Post does not exist!`;
 
   const newComment = new Comment(commentParam);

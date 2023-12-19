@@ -12,13 +12,18 @@ const Comment = db.Comment;
 
 async function getAll(user) {
   if (!user) {
-    return await Post.find().sort({ likes: -1 }).limit(5);
+    return await Post.find({ pending: false })
+      .populate("user", "firstName lastName email")
+      .sort({ likes: -1 })
+      .limit(5);
   }
 
-  const posts = await Post.find().lean();
-  const likes = await Like.find({
-    user,
-  }).lean();
+  const posts = await Post.find({ pending: false })
+    .populate("user", "firstName lastName email")
+    .lean();
+
+  const likes = await Like.find({ user }).lean();
+  // console.log("likes: ", likes, user);
   const likedPostIds = new Set(likes.map((like) => like.post.toString()));
 
   const postsWithLikeStatus = posts.map((post) => ({
@@ -29,12 +34,15 @@ async function getAll(user) {
   return postsWithLikeStatus;
 }
 
-async function getById(id) {
-  return await Post.findById(id);
+async function getPendingPosts() {
+  return await Post.find({ pending: true }).populate(
+    "user",
+    "firstName lastName email"
+  );
 }
 
-async function getPendingPosts() {
-  return await Post.find({ pending: true });
+async function getById(id) {
+  return await Post.findById(id);
 }
 
 async function create(postParam) {
@@ -45,18 +53,15 @@ async function create(postParam) {
   await newPost.save();
 }
 
-async function getUserPosts(id) {
-  return await Post.find({ user: id });
-}
-
 async function getPostComments(id) {
   const post = await Post.findById(id);
   if (!post) {
     throw "Post not found.";
   }
-
-  const comments = await Comment.find({ post: post._id });
-  return comments.sort({ createdAt: -1 });
+  const comments = await Comment.find({ post: post._id }).sort({
+    createdAt: -1,
+  });
+  return comments;
 }
 
 async function update(id, postParam, isLike) {
@@ -73,14 +78,25 @@ async function update(id, postParam, isLike) {
 
   Object.assign(post, postParam);
   if (isLike) {
-    Object.assign(post, { likes: post.likes + 1 });
-    const user = await User.findById(post.user.toString());
-
-    const like = new Like({
+    const existingLike = await Like.findOne({
       post: post._id,
-      user: user._id,
+      user: currentUser.sub,
     });
-    await like.save();
+
+    if (existingLike) {
+      await Like.deleteOne({ _id: existingLike._id });
+
+      if (post.likes > 0) {
+        Object.assign(post, { likes: post.likes - 1 });
+      }
+    } else {
+      Object.assign(post, { likes: post.likes + 1 });
+      const like = new Like({
+        post: post._id.toString(),
+        user: currentUser.sub,
+      });
+      await like.save();
+    }
   }
   await post.save();
 }
@@ -116,7 +132,6 @@ module.exports = {
   create,
   getPendingPosts,
   update,
-  getUserPosts,
   delete: _delete,
   verify,
   getPostComments,

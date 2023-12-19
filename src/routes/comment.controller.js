@@ -1,20 +1,11 @@
 const express = require("express");
 const router = express.Router();
 const commentService = require("../services/comment.services");
-const Role = require("../helpers/role");
-const { jwt, jwtOptional } = require("../helpers/jwt");
+const { jwt } = require("../helpers/jwt");
 
-//routes
 router.post("/create", jwt(), createComment);
 router.put("/:id", jwt(), updateComment);
 router.delete("/:id", jwt(), _delete);
-// router.get("/", jwtOptional(), getAll);
-// router.get("/pending", jwt(Role.Admin), pendingPost);
-// router.post("/:id/verify", jwt(Role.Admin), verifyPost);
-// // router.get("/current", jwt(), getCurrent);
-// router.get("/:id", jwt(), getById);
-// router.get("/user", jwt(), getUserPosts);
-// router.post("/:id/like", jwt(), likePost);
 
 module.exports = router;
 

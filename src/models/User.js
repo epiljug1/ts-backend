@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const role = require("../helpers/role");
 const Schema = mongoose.Schema;
 
 const schema = new Schema({
@@ -6,7 +7,7 @@ const schema = new Schema({
   firstName: { type: String, required: true },
   lastName: { type: String, required: true },
   password: { type: String, required: true },
-  role: { type: String, required: true },
+  role: { type: String, default: role.User },
   createdDate: { type: Date, default: Date.now },
 });
 
