@@ -12,6 +12,7 @@ router.post("/:id/verify", jwt(Role.Admin), verifyPost);
 router.put("/:id", jwt(), update);
 
 router.get("/", jwtOptional(), getAll);
+router.get("/popular", jwtOptional(), getPopular);
 router.get("/pending", jwt(Role.Admin), pendingPost);
 router.get("/:id", jwt(), getById);
 router.get("/:id/comments", jwt(), getPostComments);
@@ -51,7 +52,14 @@ function getPostComments(req, res, next) {
 
 function getAll(req, res, next) {
   postServices
-    .getAll(req.user?.sub)
+    .getAll(req.user?.sub, { pending: false }, { createdAt: -1 })
+    .then((posts) => res.json(posts))
+    .catch((err) => next(err));
+}
+
+function getPopular(req, res, next) {
+  postServices
+    .getAll(req.user?.sub, { pending: false }, { likes: -1 })
     .then((posts) => res.json(posts))
     .catch((err) => next(err));
 }

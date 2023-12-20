@@ -14,7 +14,7 @@ router.get("/posts", jwt(), getUserPosts);
 
 router.put("/:id", jwt(), update);
 
-router.get("/", jwt(Role.Admin), getAll);
+router.get("/", jwtOptional(), getAll);
 router.get("/current", jwtOptional(), getCurrent);
 router.get("/:id", jwt(), getById);
 
@@ -64,13 +64,8 @@ function register(req, res, next) {
 }
 
 function getAll(req, res, next) {
-  const currentUser = req.user;
-
-  // if (currentUser.role !== Role.Admin) {
-  //   return res.status(401).json({ message: "Not Authorized!" });
-  // }
   userServices
-    .getAll()
+    .getAll(req.user?.sub)
     .then((users) => res.json(users))
     .catch((err) => next(err));
 }

@@ -31,8 +31,41 @@ async function authenticate({ email, password }) {
   }
 }
 
-async function getAll() {
-  return await User.find();
+async function getAll(user) {
+  let aggregationPipeline = [
+    {
+      $lookup: {
+        from: "posts",
+        localField: "_id",
+        foreignField: "user",
+        as: "posts",
+      },
+    },
+    {
+      $addFields: {
+        postCount: { $size: "$posts" },
+      },
+    },
+    {
+      $sort: { postCount: -1 },
+    },
+    {
+      $project: {
+        email: 1,
+        firstName: 1,
+        lastName: 1,
+        role: 1,
+        createdDate: 1,
+        postCount: 1,
+      },
+    },
+  ];
+
+  if (!user) {
+    aggregationPipeline.push({ $limit: 5 });
+  }
+
+  return await User.aggregate(aggregationPipeline);
 }
 
 async function getById(id) {

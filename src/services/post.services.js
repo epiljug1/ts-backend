@@ -10,15 +10,16 @@ const Post = db.Post;
 const Like = db.Like;
 const Comment = db.Comment;
 
-async function getAll(user) {
+async function getAll(user, filter, sort) {
   if (!user) {
-    return await Post.find({ pending: false })
+    return await Post.find(filter)
       .populate("user", "firstName lastName email")
-      .sort({ likes: -1 })
+      .sort(sort)
       .limit(5);
   }
 
-  const posts = await Post.find({ pending: false })
+  const posts = await Post.find(filter)
+    .sort(sort)
     .populate("user", "firstName lastName email")
     .lean();
 
