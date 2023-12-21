@@ -116,9 +116,29 @@ async function _delete(id) {
   await User.findByIdAndDelete(id);
 }
 
-async function getUserPosts(id) {
-  const posts = await Post.find({ user: id })
+async function getUserPosts(id, query) {
+  let searchFilter = {};
+  if (query.search) {
+    const searchRegex = new RegExp(query.search, "i");
+    searchFilter = {
+      $or: [
+        { content: { $regex: searchRegex } },
+        { city: { $regex: searchRegex } },
+      ],
+    };
+  }
+
+  if (query.city) {
+    const searchRegex = new RegExp(query.city, "i");
+    searchFilter = {
+      $or: [{ city: { $regex: searchRegex } }],
+    };
+  }
+
+  const finalFilter = { user: id, ...searchFilter };
+  const posts = await Post.find(finalFilter)
     .populate("user", "firstName lastName email")
+    .sort({ createdAt: -1 })
     .lean();
 
   const likes = await Like.find({ user: id }).lean();

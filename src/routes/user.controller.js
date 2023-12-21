@@ -72,7 +72,7 @@ function getAll(req, res, next) {
 
 function getUserPosts(req, res, next) {
   userServices
-    .getUserPosts(req.user.sub)
+    .getUserPosts(req.user.sub, req.query)
     .then((posts) => res.json(posts))
     .catch((err) => next(err));
 }

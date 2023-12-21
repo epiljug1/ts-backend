@@ -51,22 +51,23 @@ function getPostComments(req, res, next) {
 }
 
 function getAll(req, res, next) {
+  console.log("req: ", req.query);
   postServices
-    .getAll(req.user?.sub, { pending: false }, { createdAt: -1 })
+    .getAll(req.user?.sub, { pending: false }, { createdAt: -1 }, req.query)
     .then((posts) => res.json(posts))
     .catch((err) => next(err));
 }
 
 function getPopular(req, res, next) {
   postServices
-    .getAll(req.user?.sub, { pending: false }, { likes: -1 })
+    .getAll(req.user?.sub, { pending: false }, { likes: -1 }, req.query)
     .then((posts) => res.json(posts))
     .catch((err) => next(err));
 }
 
 function pendingPost(req, res, next) {
   postServices
-    .getPendingPosts()
+    .getPendingPosts(req.query)
     .then((posts) => res.json(posts))
     .catch((err) => next(err));
 }
