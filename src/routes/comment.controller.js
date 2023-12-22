@@ -4,8 +4,8 @@ const commentService = require("../services/comment.services");
 const { jwt } = require("../helpers/jwt");
 
 router.post("/create", jwt(), createComment);
-router.put("/:id", jwt(), updateComment);
 router.delete("/:id", jwt(), _delete);
+router.put("/:id", jwt(), updateComment);
 
 module.exports = router;
 
@@ -33,11 +33,12 @@ function updateComment(req, res, next) {
 }
 
 function _delete(req, res, next) {
-  commentServices
+  commentService
     .delete(req.params.id, { currentUser: req.user })
-    .then(() =>
+    .then((data) =>
       res.json({
         message: `Comment with id: ${req.params.id} deleted successfully.`,
+        data,
       })
     )
     .catch((error) => next(error));

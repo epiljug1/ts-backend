@@ -88,7 +88,12 @@ async function getPendingPosts(query) {
 }
 
 async function getById(id) {
-  return await Post.findById(id);
+  const comments = await getPostComments(id);
+  const post = await Post.findById(id).lean();
+  return {
+    ...post,
+    comments,
+  };
 }
 
 async function create(postParam) {
@@ -104,9 +109,11 @@ async function getPostComments(id) {
   if (!post) {
     throw "Post not found.";
   }
-  const comments = await Comment.find({ post: post._id }).sort({
-    createdAt: -1,
-  });
+  const comments = await Comment.find({ post: post._id })
+    .populate("user", "firstName lastName")
+    .sort({
+      createdAt: -1,
+    });
   return comments;
 }
 
@@ -145,6 +152,7 @@ async function update(id, postParam, isLike) {
     }
   }
   await post.save();
+  return post;
 }
 
 async function verify(id) {

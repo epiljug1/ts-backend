@@ -88,9 +88,10 @@ function createPost(req, res, next) {
 function update(req, res, next) {
   postServices
     .update(req.params.id, { ...req.body, currentUser: req.user })
-    .then(() =>
+    .then((data) =>
       res.json({
         message: `Post updated successfully.`,
+        data,
       })
     )
     .catch((error) => next(error));

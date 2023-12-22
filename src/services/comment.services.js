@@ -19,8 +19,8 @@ async function create(commentParam) {
 
   const newComment = new Comment(commentParam);
   await newComment.save();
+  return { data: post };
 }
-
 
 async function update(id, commentParam) {
   const comment = await Comment.findById(id);
@@ -42,13 +42,21 @@ async function _delete(id, postParam) {
     throw "Comment not found.";
   }
 
+  const post = await Post.findById(comment.post);
   const currentUser = postParam.currentUser;
+  const commentCreator = comment.user.toString();
   const postCreator = post.user.toString();
-  if (currentUser.sub !== postCreator && currentUser.role !== "Admin") {
+
+  if (
+    currentUser.sub !== commentCreator &&
+    currentUser.role !== "Admin" &&
+    currentUser.sub !== postCreator
+  ) {
     throw new UnauthorizedError("No permission to delete this comment!");
   }
 
   await Comment.findByIdAndDelete(id);
+  return comment;
 }
 
 module.exports = {

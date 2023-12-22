@@ -30,9 +30,17 @@ async function authenticate({ email, password }) {
     return { ...user.toJSON(), token };
   }
 }
-
 async function getAll(user) {
+  let matchCriteria = { role: "User" };
+
+  if (user) {
+    matchCriteria._id = { $ne: user };
+  }
+
   let aggregationPipeline = [
+    {
+      $match: matchCriteria,
+    },
     {
       $lookup: {
         from: "posts",

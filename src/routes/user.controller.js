@@ -3,7 +3,6 @@ const router = express.Router();
 const userServices = require("../services/user.services");
 const Role = require("../helpers/role");
 const { jwt, jwtOptional } = require("../helpers/jwt");
-const { jwtDecode } = require("jwt-decode");
 
 //routes
 router.post("/authenticate", authenticate);
@@ -97,6 +96,17 @@ function getById(req, res, next) {
       }
       return res.json(user);
     })
+    .catch((error) => next(error));
+}
+
+function updateToAdmin(req, res, next) {
+  userServices
+    .update(req.params.id, req.body)
+    .then(() =>
+      res.json({
+        message: `User with id: ${req.params.id} updated successfully.`,
+      })
+    )
     .catch((error) => next(error));
 }
 
