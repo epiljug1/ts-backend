@@ -28,6 +28,7 @@ function authenticate(req, res, next) {
       if (user) {
         res.cookie("authToken", user.token, {
           httpOnly: true,
+          sameSite: "Strict",
           path: "/",
           maxAge: 3600000,
         });
