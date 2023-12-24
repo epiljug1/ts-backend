@@ -45,6 +45,7 @@ function authenticate(req, res, next) {
 function logout(req, res, next) {
   res.clearCookie("authToken", {
     httpOnly: true,
+    sameSite: "Strict",
     path: "/",
   });
 

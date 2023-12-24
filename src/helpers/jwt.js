@@ -13,6 +13,7 @@ const attachUser = (req, res, next) => {
   if (decodedToken?.exp * 1000 < Date.now()) {
     res.clearCookie("authToken", {
       httpOnly: true,
+      sameSite: "Strict",
       path: "/",
     });
     next();
@@ -38,6 +39,7 @@ const optionalAttachUser = (req, res, next) => {
   if (decodedToken?.exp * 1000 < Date.now()) {
     res.clearCookie("authToken", {
       httpOnly: true,
+      sameSite: "Strict",
       path: "/",
     });
     next();
