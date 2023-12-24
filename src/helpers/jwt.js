@@ -5,18 +5,16 @@ const jwtDecode = require("jwt-decode");
 const jsonwebtoken = require("jsonwebtoken");
 
 const attachUser = (req, res, next) => {
-  const token = req.cookies.authToken;
-  if (!token) {
+  const authHeader = req.headers.authorization;
+  const authToken = authHeader && authHeader.split(" ")[1];
+
+  const token = authToken;
+  if (!token || token === "undefined") {
     return res.status(401).json({ message: "Authentication invalid" });
   }
   const decodedToken = jsonwebtoken.decode(token);
   if (decodedToken?.exp * 1000 < Date.now()) {
-    res.clearCookie("authToken", {
-      httpOnly: true,
-      sameSite: "Strict",
-      path: "/",
-    });
-    next();
+    return res.status(401).json({ message: "Token has expired" });
   }
 
   if (!decodedToken) {
@@ -30,19 +28,17 @@ const attachUser = (req, res, next) => {
 };
 
 const optionalAttachUser = (req, res, next) => {
-  const token = req.cookies.authToken;
+  const authHeader = req.headers.authorization;
+  const authToken = authHeader && authHeader.split(" ")[1];
+  const token = authToken;
 
-  if (!token) {
+  if (!token || token === "undefined") {
+    console.log("optional: ", token);
     next();
   }
   const decodedToken = jsonwebtoken.decode(token);
   if (decodedToken?.exp * 1000 < Date.now()) {
-    res.clearCookie("authToken", {
-      httpOnly: true,
-      sameSite: "Strict",
-      path: "/",
-    });
-    next();
+    return res.status(401).json({ message: "Token has expired" });
   }
   // console.log("decodedToken-> ", decodedToken);
 

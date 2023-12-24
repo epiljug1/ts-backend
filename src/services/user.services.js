@@ -23,10 +23,10 @@ async function authenticate({ email, password }) {
       },
       config.secret,
       {
-        expiresIn: "7d",
+        expiresIn: "1h",
       }
     );
-
+    await user.save();
     return { ...user.toJSON(), token };
   }
 }

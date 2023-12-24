@@ -2,6 +2,7 @@ const config = require("../../config.json");
 const mongoose = require("mongoose");
 const role = require("./role");
 const User = require("../models/User");
+const bcrypt = require("bcryptjs");
 
 async function createInitialAdmin() {
   try {
